@@ -1,27 +1,44 @@
 let mockDb = require("../database");
 
+const filterByAvailability = (products, availableQuery) => {
+  if (availableQuery === undefined) return products;
+  const isAvailable = availableQuery === "true";
+  return products.filter((product) => product.available === isAvailable);
+};
+
+const sortProducts = (products, sortBy) => {
+  if (!sortBy) return products;
+  return [...products].sort((a, b) =>
+    typeof a[sortBy] === "string"
+      ? a[sortBy].localeCompare(b[sortBy])
+      : a[sortBy] - b[sortBy]
+  );
+};
+
+const searchProducts = (products, searchQuery) => {
+  if (!searchQuery) return products;
+  const searchTerm = searchQuery.toLowerCase();
+  return products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm)
+  );
+};
+
 const getProducts = (req, res) => {
   let filteredProducts = mockDb;
 
   if (req.query.available) {
-    const available = req.query.available === "true";
-    filteredProducts = filteredProducts.filter(
-      (product) => product.available === available
+    filteredProducts = filterByAvailability(
+      filteredProducts,
+      req.query.available
     );
   }
 
-  const sortBy = req.query.sortBy || "id";
-  filteredProducts = filteredProducts.sort((a, b) => {
-    if (a[sortBy] < b[sortBy]) return -1;
-    if (a[sortBy] > b[sortBy]) return 1;
-    return 0;
-  });
-
   if (req.query.search) {
-    const searchRegex = new RegExp(req.query.search, "i");
-    filteredProducts = filteredProducts.filter((product) =>
-      searchRegex.test(product.name)
-    );
+    filteredProducts = searchProducts(filteredProducts, req.query.search);
+  }
+
+  if (req.query.sortBy) {
+    filteredProducts = sortProducts(filteredProducts, req.query.sortBy);
   }
 
   res.json(filteredProducts);
