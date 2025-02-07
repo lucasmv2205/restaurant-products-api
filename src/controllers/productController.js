@@ -71,8 +71,21 @@ const updateProduct = (req, res) => {
 
 const deleteProduct = (req, res) => {
   const productId = parseInt(req.params.id);
+
+  const product = mockDb.find((p) => p.id === productId);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found." });
+  }
+
+  if (product.available) {
+    return res
+      .status(400)
+      .json({ message: "Cannot delete an available product." });
+  }
+
   mockDb = mockDb.filter((p) => p.id !== productId);
-  res.status(204).send();
+
+  res.status(200).json({ message: "Product successfully deleted." });
 };
 
 module.exports = {
