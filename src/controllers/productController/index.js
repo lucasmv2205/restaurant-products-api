@@ -1,27 +1,10 @@
-let mockDb = require("../database");
-
-const filterByAvailability = (products, availableQuery) => {
-  if (availableQuery === undefined) return products;
-  const isAvailable = availableQuery === "true";
-  return products.filter((product) => product.available === isAvailable);
-};
-
-const sortProducts = (products, sortBy) => {
-  if (!sortBy) return products;
-  return [...products].sort((a, b) =>
-    typeof a[sortBy] === "string"
-      ? a[sortBy].localeCompare(b[sortBy])
-      : a[sortBy] - b[sortBy]
-  );
-};
-
-const searchProducts = (products, searchQuery) => {
-  if (!searchQuery) return products;
-  const searchTerm = searchQuery.toLowerCase();
-  return products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm)
-  );
-};
+let mockDb = require("../../database");
+const {
+  filterByAvailability,
+  sortProducts,
+  searchProducts,
+  deleteProductById,
+} = require("../../services/productService");
 
 const getProducts = (req, res) => {
   let filteredProducts = mockDb;
@@ -72,20 +55,20 @@ const updateProduct = (req, res) => {
 const deleteProduct = (req, res) => {
   const productId = parseInt(req.params.id);
 
-  const product = mockDb.find((p) => p.id === productId);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found." });
+  try {
+    const result = deleteProductById(productId);
+    res.status(200).json(result);
+  } catch (error) {
+    if (error.message === "Product not found") {
+      return res.status(404).json({ message });
+    }
+
+    if (error.message === "Cannot delete an available product") {
+      return res.status(400).json({ message });
+    }
+
+    return res.status(500).json({ message: "An unexpected error occurred." });
   }
-
-  if (product.available) {
-    return res
-      .status(400)
-      .json({ message: "Cannot delete an available product." });
-  }
-
-  mockDb = mockDb.filter((p) => p.id !== productId);
-
-  res.status(200).json({ message: "Product successfully deleted." });
 };
 
 module.exports = {
