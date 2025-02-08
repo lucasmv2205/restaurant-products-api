@@ -42,3 +42,5 @@ Follow these steps to set up and run the backend API:
 4. Run test from hest: `npm run test`
 
 The server will start on port 3000 by default.
+
+![image](https://github.com/user-attachments/assets/a98737c0-c34f-48a2-8650-aefefbe265c8)
