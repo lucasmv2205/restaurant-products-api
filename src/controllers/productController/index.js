@@ -60,11 +60,11 @@ const deleteProduct = (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     if (error.message === "Product not found") {
-      return res.status(404).json({ message });
+      return res.status(404).json({ message: error.message });
     }
 
     if (error.message === "Cannot delete an available product") {
-      return res.status(400).json({ message });
+      return res.status(400).json({ message: error.message });
     }
 
     return res.status(500).json({ message: "An unexpected error occurred." });
